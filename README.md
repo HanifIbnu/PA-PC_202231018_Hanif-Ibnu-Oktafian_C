@@ -3,103 +3,138 @@
 ### Penjelasan Program
 
 1. **Impor Library**:
-   ```python
-   import cv2
-   import matplotlib.pyplot as plt
-   import numpy as np
-   ```
-
-   - `cv2`: Library OpenCV untuk pemrosesan gambar.
-   - `matplotlib.pyplot`: Library Matplotlib untuk menampilkan gambar.
-   - `numpy`: Library untuk operasi numerik.
-
+```python
+import cv2 as cv
+import numpy as np
+import matplotlib.pyplot as plt
+```
+Mengimpor pustaka yang diperlukan:
+- `cv2` dari OpenCV untuk operasi citra.
+- `numpy` untuk manipulasi array.
+- `matplotlib.pyplot` untuk menampilkan gambar.
+  
 2. **Memproses Gambar**:
-   ```python
-   gambar = cv2.imread('FotoDiri.jpeg')
-   ```
-
-   - Membaca gambar dari file `FotoDiri.jpeg` menggunakan OpenCV.
+```python
+# Membaca gambar
+img = cv.imread('FotoDiri.jpeg')
+```
+Membaca gambar dari file `FotoDiri.jpeg` dan menyimpannya dalam variabel `img`.
 
 3. **Fungsi untuk Menampilkan Gambar**:
-   ```python
-   def tampilkan_gambar(gambar_list, judul_list):
-       plt.figure(figsize=(15, 10))
-       for i in range(len(gambar_list)):
-           plt.subplot(2, 3, i+1)
-           plt.imshow(cv2.cvtColor(gambar_list[i], cv2.COLOR_BGR2RGB))
-           plt.title(judul_list[i])
-           plt.axis('off')
-       plt.show()
-   ```
-
-   - Fungsi ini menerima daftar gambar (`gambar_list`) dan daftar judul (`judul_list`).
-   - Menggunakan Matplotlib untuk menampilkan gambar dalam grid 2x3.
-   - Mengonversi gambar dari format BGR (OpenCV) ke RGB (Matplotlib) untuk tampilan yang benar.
+```python
+# Mendapatkan ukuran gambar
+rows, cols = img.shape[:2]
+```
+Mendapatkan ukuran gambar (jumlah baris dan kolom) dari citra yang dibaca.
 
 4. **Gambar Asli**:
-   ```python
-   asli = gambar.copy()
-   ```
+```python
+# Gambar asli
+img_asli = img.copy()
+```
+Membuat salinan dari gambar asli untuk ditampilkan nanti.
 
-   - Menyimpan salinan dari gambar asli.
+5. **Mengubah Ukuran Gambar**:
+```python
+# Resize (memperkecil lebar menjadi setengah)
+height, width = img.shape[:2]
+resized = cv.resize(img, (width // 2, height), interpolation=cv.INTER_CUBIC)
+```
+Mengubah ukuran gambar dengan memperkecil lebar menjadi setengah dari ukuran aslinya, sementara tinggi tetap sama. Metode interpolasi yang digunakan adalah `INTER_CUBIC` yang memberikan kualitas hasil yang lebih baik.
 
-5. **Rotasi Gambar**:
-   ```python
-   (tinggi, lebar) = gambar.shape[:2]
-   pusat = (lebar // 2, tinggi // 2)
-   M = cv2.getRotationMatrix2D(pusat, 45, 1.0)
-   diputar = cv2.warpAffine(gambar, M, (lebar, tinggi))
-   ```
+6. **Translasi Gambar**:
+```python
+# Translasi (menggeser gambar 100 piksel ke kanan dan 100 piksel ke bawah)
+M_translate = np.float32([[1, 0, 100], [0, 1, 100]])
+translated = cv.warpAffine(img, M_translate, (cols, rows))
+```
+Mentranslasi (menggeser) gambar sebesar 100 piksel ke kanan dan 100 piksel ke bawah. Matriks translasi `M_translate` digunakan bersama dengan fungsi `warpAffine` untuk menerapkan pergeseran tersebut.
 
-   - Mendapatkan dimensi gambar (`tinggi` dan `lebar`).
-   - Menentukan pusat rotasi.
-   - Membuat matriks rotasi untuk memutar gambar sebesar 45 derajat.
-   - Menerapkan rotasi menggunakan `cv2.warpAffine`.
+7. **Rotasi Gambar**:
+```python
+# Rotate (memotong diagonal)
+(tinggi, lebar) = img.shape[:2]
+pusat = (lebar // 2, tinggi // 2)
+M_rotate = cv.getRotationMatrix2D(pusat, 45, 1.0)
+rotated = cv.warpAffine(img, M_rotate, (lebar, tinggi))
+```
+Memutar gambar sebesar 45 derajat searah jarum jam. Pusat rotasi adalah pusat gambar (`pusat`). Matriks rotasi `M_rotate` digunakan bersama dengan fungsi `warpAffine` untuk menerapkan rotasi.
 
-6. **Mengubah Ukuran Gambar**:
-   ```python
-   tinggi_baru = int(tinggi * 1.5)  # Tinggi naik 50%
-   lebar_baru = lebar  # Lebar tetap sama
-   diubah_ukuran = cv2.resize(gambar, (lebar_baru, tinggi_baru))
-   ```
+8. **Memotong Gambar**:
+```python
+# Crop (memotong gambar)
+cropped = img[50:300, 50:300]
+```
+Memotong gambar dari koordinat (50, 50) hingga (300, 300), menghasilkan gambar yang lebih kecil.
 
-   - Menghitung dimensi baru untuk gambar dengan meningkatkan tinggi sebesar 50% dan mempertahankan lebar asli.
-   - Mengubah ukuran gambar menggunakan `cv2.resize`.
+9. **Rotasi Gambar**:
+```python
+# Flip (membalik gambar)
+flipped = cv.flip(img, 1)
+```
+Membalik gambar secara horizontal. Parameter `1` menunjukkan pembalikan pada sumbu y (horizontal).
 
-7. **Memotong Gambar**:
-   ```python
-   dipotong = gambar[50:200, 50:200]
-   ```
+10. **Menampilkan Semua Gambar Setelah Pemrosesan Gambar**
+```python
+# Menampilkan semua gambar dalam layout 2x3
+fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+```
+Membuat layout tampilan 2 baris x 3 kolom menggunakan Matplotlib untuk menampilkan gambar-gambar yang telah dimodifikasi.
 
-   - Memotong bagian dari gambar dari koordinat (50,50) hingga (200,200).
+```python
+# Gambar asli
+axs[0, 0].imshow(cv.cvtColor(img_asli, cv.COLOR_BGR2RGB))
+axs[0, 0].set_title('Citra Asli')
+axs[0, 0].axis('on')
+```
+Menampilkan gambar asli pada posisi [0, 0] (baris pertama, kolom pertama) dalam layout. Fungsi `cv.cvtColor` digunakan untuk mengubah format warna dari BGR ke RGB (format yang digunakan Matplotlib).
 
-8. **Membalik Gambar**:
-   ```python
-   dibalik = cv2.flip(gambar, 1)
-   ```
+```python
+# Gambar setelah diputar
+axs[0, 1].imshow(cv.cvtColor(rotated, cv.COLOR_BGR2RGB))
+axs[0, 1].set_title('After Rotated')
+axs[0, 1].axis('on')
+```
+Menampilkan gambar setelah diputar pada posisi [0, 1] (baris pertama, kolom kedua) dalam layout.
 
-   - Membalik gambar secara horizontal menggunakan `cv2.flip`.
+```python
+# Gambar setelah diubah ukuran
+axs[0, 2].imshow(cv.cvtColor(resized, cv.COLOR_BGR2RGB))
+axs[0, 2].set_title('After Resized')
+axs[0, 2].axis('on')
+```
+Menampilkan gambar setelah diubah ukuran pada posisi [0, 2] (baris pertama, kolom ketiga) dalam layout.
 
-9. **Translasi Gambar**:
-   ```python
-   M = np.float32([[1, 0, 50], [0, 1, 100]])
-   ditranslasi = cv2.warpAffine(gambar, M, (lebar, tinggi))
-   ```
+```python
+# Gambar setelah dipotong
+axs[1, 0].imshow(cv.cvtColor(cropped, cv.COLOR_BGR2RGB))
+axs[1, 0].set_title('After Cropped')
+axs[1, 0].axis('on')
+```
+Menampilkan gambar setelah dipotong pada posisi [1, 0] (baris kedua, kolom pertama) dalam layout.
 
-   - Membuat matriks translasi untuk menggeser gambar 50 piksel ke kanan dan 100 piksel ke bawah.
-   - Menerapkan translasi menggunakan `cv2.warpAffine`.
+```python
+# Gambar setelah dibalik
+axs[1, 1].imshow(cv.cvtColor(flipped, cv.COLOR_BGR2RGB))
+axs[1, 1].set_title('After Flipped')
+axs[1, 1].axis('on')
+```
+Menampilkan gambar setelah dibalik pada posisi [1, 1] (baris kedua, kolom kedua) dalam layout.
 
-10. **Menampilkan Semua Gambar**:
-    ```python
-    gambar_list = [asli, diputar, diubah_ukuran, dipotong, dibalik, ditranslasi]
-    judul_list = ['Citra Asli', 'After Rotated', 'After Resized', 'After Cropped', 'After Flipped', 'After Translated']
-    tampilkan_gambar(gambar_list, judul_list)
-    ```
+```python
+# Gambar setelah ditranslasi
+axs[1, 2].imshow(cv.cvtColor(translated, cv.COLOR_BGR2RGB))
+axs[1, 2].set_title('After Translated')
+axs[1, 2].axis('on')
+```
+Menampilkan gambar setelah ditranslasi pada posisi [1, 2] (baris kedua, kolom ketiga) dalam layout.
 
-    - Membuat daftar gambar dan judul.
-    - Memanggil fungsi `tampilkan_gambar` untuk menampilkan semua gambar dalam grid.
-   
-    
+```python
+plt.show()
+```
+Menampilkan semua gambar dalam layout 2x3 menggunakan Matplotlib.
+
+
 ### Pemrosesan Gambar: Teori dan Aplikasinya
 
 Pemrosesan gambar adalah bidang yang luas dalam ilmu komputer dan teknik yang melibatkan manipulasi dan analisis gambar digital untuk mendapatkan informasi atau menghasilkan gambar yang lebih baik. Teknik-teknik dasar dalam pemrosesan gambar meliputi rotasi, perubahan ukuran, pemotongan, pembalikan, dan translasi gambar, yang masing-masing memiliki aplikasi dan teori yang mendasarinya.
